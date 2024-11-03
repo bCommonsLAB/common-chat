@@ -9,9 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@langchain/openai": "^0.3.11",
+    "@pinecone-database/pinecone": "^4.0.0",
     "framer-motion": "^11.11.11",
+    "langchain": "^0.0.75",
     "lucide-react": "^0.454.0",
     "next": "15.0.2",
+    "openai": "^4.0.0",
     "react": "19.0.0-rc-02c0e824-20241028",
     "react-dom": "19.0.0-rc-02c0e824-20241028",
     "react-swipeable": "^7.0.1"

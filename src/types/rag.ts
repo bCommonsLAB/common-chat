@@ -1,8 +1,27 @@
+
+export interface StructuredSource {
+  title: string;
+  author: string;
+  year: string;
+  url: string;
+  imageUrl: string;
+  metainfo?: {
+    key: string;
+    value: string | number | boolean | null;
+  }[];
+  pages: {
+    pageNumber: number;
+    content: string;
+    excerpt: string;
+  }[];
+}
+
+
 export interface Source {
   title: string;
   author: string;
   year: string;
-  page: string;
+  pageNumber: number;
   content: string;
   excerpt: string;
   url: string;
@@ -18,7 +37,7 @@ export interface Message {
   content: string;
   isUser: boolean;
   timestamp: string;
-  sources?: Source[];
+  sources?: StructuredSource[];
 }
 
 export interface FlowiseResponse {

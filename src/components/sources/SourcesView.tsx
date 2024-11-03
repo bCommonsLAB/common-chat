@@ -1,11 +1,11 @@
 import React from 'react';
-import { Source } from '@/types/rag';
+import { StructuredSource } from '@/types/rag';
 import { SourceCard } from './SourceCard';
 import { BookOpen, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface SourcesViewProps {
-  sources: Source[];
+  sources: StructuredSource[];
   className?: string;
   isMobile?: boolean;
   onClose?: () => void;
@@ -69,6 +69,11 @@ export const SourcesView: React.FC<SourcesViewProps> = ({
         <h2 className="text-xl font-semibold flex items-center gap-2">
           <BookOpen className="w-5 h-5" /> Quellen
         </h2>
+      </div>
+      <div className="p-4">
+        <p className="text-gray-600 text-sm">
+          Die generierte Antwort ist eine Synthese aus diesen Quellen, die wahrscheinlich mit der gestellten Frage in Bezug stehen
+        </p>
       </div>
       {content}
     </div>

@@ -1,9 +1,9 @@
 import React from 'react';
 import Image from 'next/image';
-import { Source } from '@/types/rag';
+import { StructuredSource } from '@/types/rag';
 
 interface SourceCardProps {
-  source: Source;
+  source: StructuredSource;
 }
 
 export const SourceCard: React.FC<SourceCardProps> = ({ source }) => (
@@ -26,7 +26,6 @@ export const SourceCard: React.FC<SourceCardProps> = ({ source }) => (
                 </div>
               ))}
               <div>Jahr: {source.year}</div>
-              <div>Seite: {source.page}</div>
             </div>
           )}
       </div>
@@ -40,9 +39,17 @@ export const SourceCard: React.FC<SourceCardProps> = ({ source }) => (
               von {source.author}     
             </p>
           </div>
-          <p className="text-gray-700 text-sm leading-relaxed line-clamp-4 italic">
-            &quot;{source.excerpt}&quot;
-          </p>
+          {/* Seiten des Dokuments */}
+          {source.pages && (
+            <div className="mt-4">
+              {source.pages.map((page) => (
+                <div key={page.pageNumber} className="mb-3 border-l-2 border-gray-200 pl-3">
+                  <div className="text-sm font-medium">Seite {page.pageNumber}</div>
+                  <div className="text-sm text-gray-600">{page.excerpt}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

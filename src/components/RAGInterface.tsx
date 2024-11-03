@@ -1,20 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Send } from 'lucide-react';
 import { Message } from '@/types/rag';
 import { useSwipeable } from 'react-swipeable';
 import { ChatHistory } from './chat/ChatHistory';
 import { SourcesView } from './sources/SourcesView';
-import { sendMessageToRAG, getInitialGreeting } from '@/services/ragService';
 import { MessageInput } from './chat/MessageInput';
 
 interface RAGInterfaceProps {
-  system: string;
+  chatContent: string;
 }
 
-const RAGInterface: React.FC<RAGInterfaceProps> = ({ system }) => {
-  console.log(system);
+const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent }) => {
+  console.log(chatContent);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -48,23 +46,35 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ system }) => {
     setNewMessage("");
 
     try {
-      const response = await sendMessageToRAG(newMessage, system);
-        
+      const response = await fetch(`/api/rag/${chatContent}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: newMessage }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+
       const assistantMessage: Message = {
         id: messages.length + 2,
-        content: response.content,
+        content: data.content,
         isUser: false,
         timestamp: new Date().toLocaleTimeString([], { 
           hour: '2-digit', 
           minute: '2-digit' 
         }),
-        sources: response.sources
+        sources: data.sources
       };
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Error sending message:', error);
-      // Hier könnte man einen Error-State hinzufügen und dem Nutzer anzeigen
+      console.error('Fehler beim Senden der Nachricht:', error);
+      // Hier können Sie einen Fehlerstatus setzen und dem Nutzer anzeigen
     }
   };
 
@@ -79,28 +89,17 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ system }) => {
 
   // Initialisierung beim Laden
   useEffect(() => {
-    const initializeChat = async () => {
-      try {
-        const greeting = await getInitialGreeting();
-        setMessages([{
-          id: 1,
-          content: greeting.content,
-          isUser: false,
-          timestamp: new Date().toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
-          sources: greeting.sources
-        }]);
-      } catch (error) {
-        console.error('Error initializing chat:', error);
-      } finally {
-        setIsLoading(false);
-        setIsMobileSourcesOpen(false);
-      }
-    };
-
-    initializeChat();
+    setMessages([{
+      id: 1,
+      content: "Hello! How can I help you today?",
+      isUser: false,
+      timestamp: new Date().toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      }),
+      sources: []
+    }]);
+    setIsLoading(false);
   }, []);
 
   return (
