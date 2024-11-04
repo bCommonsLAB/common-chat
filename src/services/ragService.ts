@@ -1,32 +1,8 @@
 import { Source, Message, StructuredSource } from '@/types/rag';
 import { initialMessages } from '@/data/initialMessages';
-import { PineconeService } from './pineconeService';
 
-export async function sendMessageToRAG(message: string, chatContent: string): Promise<Message> {
-  console.log(process.env.DEBUG_MODE);
-  console.log(chatContent);
 
-  const RAG_SYSTEM = "PINECONE";
-
-  console.log(message);
-  /*if(RAG_SYSTEM === "FLOWISE") {
-    return await sendMessageToFlowise(message, chatContent);
-  }*/
-
-  if(RAG_SYSTEM === "PINECONE") {
-    return await sendMessageToPinecone(message, chatContent);
-  }
-
-  return getMockResponse(message, chatContent);
-}
-
-async function sendMessageToPinecone(message: string, chatContent: string): Promise<Message> {
-  const pineconeService = new PineconeService();
-  const response = await pineconeService.query(message, chatContent);
-  return response;
-}
-
-async function sendMessageToFlowise(message: string, chatContent: string): Promise<Message> {
+export async function sendMessageToFlowise(message: string, chatContent: string): Promise<Message> {
   let flowiseUrl: string | undefined = undefined;
   switch (chatContent) {
     case 'biodiv':
@@ -68,7 +44,7 @@ async function sendMessageToFlowise(message: string, chatContent: string): Promi
 }
 
 
-function analyseSourceDocuments(sourceDocuments: any[], chatContent: string): Source[] {
+export function analyseSourceDocuments(sourceDocuments: any[], chatContent: string): Source[] {
   return sourceDocuments?.map((doc: any) => {
 
     const filename = doc.metadata.source.split('\\').pop();
@@ -104,8 +80,8 @@ function analyseSourceDocuments(sourceDocuments: any[], chatContent: string): So
         content: doc.pageContent,
         pageNumber: Number(doc.metadata["loc.pageNumber"]),
         excerpt: doc.pageContent.substring(0, 200) + '...',
-        url: doc.metadata.source || '#',
-        imageUrl: doc.metadata.imageUrl || "#",
+        url: doc.metadata.source || '',
+        imageUrl: doc.metadata.imageUrl || '',
         metainfo: [
           {key: "Zeitschrift", value: journal},
           {key: "Ausgabe", value: "Ausgabe " + issue},
@@ -131,7 +107,7 @@ function analyseSourceDocuments(sourceDocuments: any[], chatContent: string): So
 
 
 // Funktion zum Umstrukturieren der Dokumente
-function restructureDocuments(sourceDocs: Source[]): StructuredSource[] {
+export function restructureDocuments(sourceDocs: Source[]): StructuredSource[] {
     // Extrahiere die sourceDocuments aus dem Text-Feld
     
     // Erstelle ein Objekt zur Gruppierung nach Quellen

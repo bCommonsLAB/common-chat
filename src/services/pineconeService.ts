@@ -1,7 +1,8 @@
-import { Index, Pinecone, PineconeIndex } from '@pinecone-database/pinecone';
+import { Index, Pinecone } from '@pinecone-database/pinecone';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { ChatOpenAI } from '@langchain/openai';
 import { Message, Source, StructuredSource } from '@/types/rag';
+import { analyseSourceDocuments, restructureDocuments } from './ragService';
 
 export class PineconeService {
   private pinecone: Pinecone;
@@ -9,6 +10,7 @@ export class PineconeService {
   private llm: ChatOpenAI;
 
   private constructor() {
+    console.log('PineconeService constructor');
     this.pinecone = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY!,
     });
@@ -22,47 +24,38 @@ export class PineconeService {
 
     this.llm = new ChatOpenAI({
       openAIApiKey: process.env.OPENAI_API_KEY!,
-      temperature: 0.1,
-      modelName: "gpt-4"
+      temperature: 0.6,
+      modelName: "gpt-4o"
     });
     console.log('ChatOpenAI LLM initialized with temperature:', this.llm.temperature);
   }
 
   public static async create(): Promise<PineconeService> {
     const service = new PineconeService();
-    await service.initPinecone();
+    //await service.initPinecone();
     return service;
   }
 
+  /*
   private async initPinecone() {
     console.log('Fetching Pinecone index', process.env.PINECONE_INDEX);
-    const index = this.pinecone.index(process.env.PINECONE_INDEX!);
+    const index: PineconeIndex = this.pinecone.index(process.env.PINECONE_INDEX!);
     try {
-      const indexStats = await index.describeIndexStats();
-      console.log('Pinecone Index Statistics:', indexStats);
+      //const indexStats = await index.describeIndexStats();
+      //console.log('Pinecone Index Statistics:', indexStats);
     } catch (error) {
       console.error('Failed to fetch Pinecone index statistics:', error);
     }
   }
+  */
 
   async query(message: string, chatContent: string): Promise<Message> {
-    if (!this.pinecone) {
+    /*if (!this.pinecone) {
       await this.initPinecone();
-    }
+    }*/
     
     const index: Index = this.pinecone.index(process.env.PINECONE_INDEX!);
-    /*
-    return {
-      id: Date.now(),
-      content: `Test`,
-      isUser: false,
-      timestamp: new Date().toLocaleTimeString('de-DE', {
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
-      sources: []
-    };
-    */    
+    
     try {
       // Embedding erstellen
       const questionEmbedding = await this.embeddings.embedQuery(message)
@@ -89,17 +82,17 @@ export class PineconeService {
 
       const relevantTexts = queryResponse.matches.map(match => match.metadata);
       console.log('relevantTexts:', relevantTexts);
-
       // Generiere die Antwort
       const prompt = `
-Beantworte die folgende Frage basierend auf dem gegebenen Kontext.
+        Sie sind ein hilfreicher Assistent. Beantworten Sie die Frage des Benutzers anhand des bereitgestellten Kontexts so gut wie möglich und nutzen Sie dabei die bereitgestellten Ressourcen.
+        Wenn es im Kontext nichts gibt, was für die Frage relevant ist, sagen Sie einfach „Hmm, bin mir nicht sicher. Entweder fehlt mir die notwendige Information oder kannst du bitte die Frage präziser formulieren?“ Versuchen Sie nicht, sich eine Antwort auszudenken.
 
-Kontext:
-${relevantTexts.map(text => text?.pageContent || '').filter(Boolean).join('\n')}
+        Kontext:
+        ${relevantTexts.map((doc, index) => `<doc id='${index}'>${doc?.text || ''}</doc>`).join('\n')}
 
-Frage: ${message}
+        Frage: ${message}
 
-Antwort:`;
+        Antwort:`;
 
       const answer = await this.llm.predict(prompt)
         .catch(error => {
@@ -107,41 +100,45 @@ Antwort:`;
           throw new Error('Die Antwort konnte nicht generiert werden.');
         });
 
-      // Konvertiere die Metadaten in Source-Objekte
-      const sources: Source[] = relevantTexts.map(metadata => ({
-        title: metadata.title || '',
-        author: metadata.author || '',
-        year: metadata.year || '',
-        content: metadata.pageContent || '',
-        pageNumber: metadata.pageNumber || 1,
-        excerpt: (metadata.pageContent?.substring(0, 200) || '') + '...',
-        url: metadata.source || '#',
-        imageUrl: metadata.imageUrl || '',
-        metainfo: [
-          { key: "Zeitschrift", value: metadata.journal || '' },
-          { key: "Ausgabe", value: metadata.issue || '' },
-          { key: "Status", value: metadata.status || '' }
-        ]
-      }));
 
-      const restructuredSources = this.restructureDocuments(sources);
+      const sourceDocuments=relevantTexts.map(doc => ({
+        pageContent: doc?.text || '',
+        metadata: {
+          "loc.lines.from": doc?.["loc.lines.from"],
+          "loc.lines.to": doc?.["loc.lines.to"],
+          "loc.pageNumber": doc?.["loc.pageNumber"],
+          "pdf.info.CreationDate": doc?.["pdf.info.CreationDate"],
+          "pdf.info.Creator": doc?.["pdf.info.Creator"],
+          "pdf.info.IsAcroFormPresent": doc?.["pdf.info.IsAcroFormPresent"],
+          "pdf.info.IsXFAPresent": doc?.["pdf.info.IsXFAPresent"],
+          "pdf.info.ModDate": doc?.["pdf.info.ModDate"],
+          "pdf.info.PDFFormatVersion": doc?.["pdf.info.PDFFormatVersion"],
+          "pdf.info.Producer": doc?.["pdf.info.Producer"],
+          "pdf.info.Title": doc?.["pdf.info.Title"],
+          "pdf.info.Trapped.name": doc?.["pdf.info.Trapped.name"],
+          "pdf.totalPages": doc?.["pdf.totalPages"],
+          "pdf.version": doc?.["pdf.version"],
+          source: doc?.source
+        }
+      }));
+      
+
+      const sources: Source[] = analyseSourceDocuments(sourceDocuments, chatContent)
+      const restructuredDocuments: StructuredSource[] = restructureDocuments(sources);
 
       return {
         id: Date.now(),
-        content: answer,
+        content: answer || "Es gab einen Fehler bei der Verarbeitung der Anfrage.",
         isUser: false,
-        timestamp: new Date().toLocaleTimeString('de-DE', {
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
-        sources: restructuredSources
+        timestamp: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
+        sources:  restructuredDocuments
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Fehler im RAG-Prozess:', error);
       return {
         id: Date.now(),
-        content: `Entschuldigung, es ist ein Fehler aufgetreten: ${error.message}`,
+        content: `Es ist ein Fehler aufgetreten: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`,
         isUser: false,
         timestamp: new Date().toLocaleTimeString('de-DE', {
           hour: '2-digit',
@@ -150,41 +147,5 @@ Antwort:`;
         sources: []
       };
     }
-    
-  }
-
-  private restructureDocuments(sourceDocs: Source[]): StructuredSource[] {
-    // Gruppiere die Dokumente nach Quelle (URL)
-    const groupedBySource = sourceDocs.reduce((acc: { [key: string]: StructuredSource }, doc) => {
-      const source = doc.url;
-
-      if (!acc[source]) {
-        acc[source] = {
-          title: doc.title,
-          author: doc.author,
-          year: doc.year,
-          url: doc.url,
-          imageUrl: doc.imageUrl,
-          metainfo: doc.metainfo,
-          pages: []
-        };
-      }
-
-      acc[source].pages.push({
-        pageNumber: doc.pageNumber,
-        content: doc.content,
-        excerpt: doc.excerpt
-      });
-
-      return acc;
-    }, {});
-
-    // Konvertiere das Ergebnis in ein Array und sortiere die Seiten
-    const result = Object.values(groupedBySource).map(doc => {
-      doc.pages.sort((a, b) => a.pageNumber - b.pageNumber);
-      return doc;
-    });
-
-    return result;
   }
 }

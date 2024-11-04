@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PineconeService } from '@/services/pineconeService';
+// import { sendMessageToFlowise } from '@/services/ragService';
 
 export async function POST(
   request: NextRequest,
@@ -15,6 +16,13 @@ export async function POST(
       );
     }
 
+    const chatContent = (await params)?.chatContent;
+
+    // FLOWISE Version
+    // const flowiseResponse = await sendMessageToFlowise(body.message, chatContent);
+    // return NextResponse.json(flowiseResponse);
+
+    // PINECONE Version
     // Initialisiere Service
     const pineconeService = await PineconeService.create()
       .catch(error => {
@@ -22,10 +30,10 @@ export async function POST(
         throw new Error('Service initialization failed');
       });
 
-    // Verarbeite Anfrage
-    const response = await pineconeService.query(body.message, params.chatContent);
+    const response = await pineconeService.query(body.message, chatContent);
     
     return NextResponse.json(response);
+
   } catch (error) {
     console.error('Error in RAG API:', error);
     

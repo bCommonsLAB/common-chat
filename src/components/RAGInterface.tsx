@@ -12,7 +12,6 @@ interface RAGInterfaceProps {
 }
 
 const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent }) => {
-  console.log(chatContent);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
