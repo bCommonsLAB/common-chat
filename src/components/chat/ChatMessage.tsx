@@ -1,16 +1,17 @@
 import React from 'react';
 import { BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
-import { Message } from '@/types/rag';
+import { ChatMessage } from '@/types/rag' ;
+
 
 interface ChatMessageProps {
-  message: Message;
+  message: ChatMessage;
   onToggleSources: (messageId: number) => void;
   isSourcesShown: boolean;
   onSourceClick: () => void;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onToggleSources, isSourcesShown, onSourceClick }) => {
-  if (message.isUser) {
+export const ChatMessageItem: React.FC<ChatMessageProps> = ({ message, onToggleSources, isSourcesShown, onSourceClick }) => {
+  if (message.role === 'user') {
     return (
       <div className="mb-4 flex justify-end">
         <div className="flex flex-col max-w-[90%]">
@@ -30,9 +31,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onToggleSourc
           <p>{message.content}</p>
           <div className="flex justify-between items-center mt-2">
             <span className="text-xs text-gray-500">{message.timestamp}</span>
-            {message.sources && (
+            {message.sources && message.sources.length>0 && (
               <button
                 onClick={() => {
+                  console.log('message.id', message.id);
                   onToggleSources(message.id);
                   onSourceClick();
                 }}

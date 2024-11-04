@@ -1,8 +1,7 @@
-import { Source, Message, StructuredSource } from '@/types/rag';
-import { initialMessages } from '@/data/initialMessages';
+import { Source, ChatMessage, StructuredSource } from '@/types/rag';
 
 
-export async function sendMessageToFlowise(message: string, chatContent: string): Promise<Message> {
+export async function sendMessageToFlowise(message: string, chatContent: string): Promise<ChatMessage> {
   let flowiseUrl: string | undefined = undefined;
   switch (chatContent) {
     case 'biodiv':
@@ -30,23 +29,21 @@ export async function sendMessageToFlowise(message: string, chatContent: string)
   }
 
   const data = await response.json();
-  console.log(data);
   const docs: Source[] = analyseSourceDocuments(data.sourceDocuments, chatContent)
   const restructuredDocuments: StructuredSource[] = restructureDocuments(docs);
 
   return {
     id: Date.now(),
     content: data.text || "Entschuldigung, es gab einen Fehler bei der Verarbeitung der Anfrage.",
-    isUser: false,
+    role: 'assistant',
     timestamp: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
     sources:  restructuredDocuments
   };
 }
 
-
 export function analyseSourceDocuments(sourceDocuments: any[], chatContent: string): Source[] {
-  return sourceDocuments?.map((doc: any) => {
-
+  return (sourceDocuments ?? []).map((doc: any) => {
+    
     const filename = doc.metadata.source.split('\\').pop();
     if(chatContent === "biodiv") {
       //Glaser_2005_SiedlungsdichteHabitatwahl&GefährdungssituationVonAmeisenInPraderSand&SchludernserAu_Gredleriana_5_p.pdf
@@ -73,7 +70,7 @@ export function analyseSourceDocuments(sourceDocuments: any[], chatContent: stri
           }
       };
 
-      return {
+      const item: Source = {
         title,
         author: authorPart,
         year,
@@ -88,9 +85,10 @@ export function analyseSourceDocuments(sourceDocuments: any[], chatContent: stri
           {key: "Status", value: getStatusText(commercialStatus)}
         ]
       }
+      return item;
     }
     if(chatContent === "freifairlebendig") {
-      return {
+      const item1: Source = {
         title: "Frei Fair & Lebendig",
         author: "",
         year: "",
@@ -101,8 +99,10 @@ export function analyseSourceDocuments(sourceDocuments: any[], chatContent: stri
         imageUrl: "",
         metainfo: []
       }
+      return item1;
     };
-  });
+
+  }).filter((doc): doc is Source => doc !== undefined);
 }
 
 
@@ -148,10 +148,10 @@ export function restructureDocuments(sourceDocs: Source[]): StructuredSource[] {
     return result;
 }
 
-
+/*
 function getMockResponse(message: string, chatContent: string): Message {
   const lowerMessage = message.toLowerCase();
-  console.log(chatContent);
+  // console.log(chatContent);
   if (lowerMessage.includes('produktivität')) {
     return {
       ...initialMessages[1],
@@ -175,11 +175,5 @@ function getMockResponse(message: string, chatContent: string): Message {
     timestamp: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
   };
 }
-
-export async function getInitialGreeting() {
-  return {
-    content: "Hello! How can I help you today?",
-    sources: []
-  };
-} 
+*/
 

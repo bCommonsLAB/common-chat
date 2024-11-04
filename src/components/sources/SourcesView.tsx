@@ -2,22 +2,24 @@ import React from 'react';
 import { StructuredSource } from '@/types/rag';
 import { SourceCard } from './SourceCard';
 import { BookOpen, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface SourcesViewProps {
   sources: StructuredSource[];
   className?: string;
   isMobile?: boolean;
+  isOpen?: boolean;
   onClose?: () => void;
-  swipeHandlers?: Record<string, unknown>;
+  onToggleSources?: (messageId: string | null) => void;
 }
 
 export const SourcesView: React.FC<SourcesViewProps> = ({
   sources,
   className,
   isMobile = false,
+  isOpen = false,
   onClose,
-  swipeHandlers = {}
+  onToggleSources
 }) => {
   const content = (
     <div className="flex-1 overflow-y-auto p-4">
@@ -37,29 +39,35 @@ export const SourcesView: React.FC<SourcesViewProps> = ({
 
   if (isMobile) {
     return (
-      <motion.div
-        {...swipeHandlers}
-        initial={{ x: '100%' }}
-        animate={{ x: 0 }}
-        exit={{ x: '100%' }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="fixed top-[5%] bottom-[5%] right-0 w-[90%] md:hidden bg-white/95 shadow-lg z-50 backdrop-blur-sm rounded-l-xl"
-      >
-        <div className="flex flex-col h-full">
-          <div className="p-4 border-b flex justify-between items-center">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <BookOpen className="w-5 h-5" /> Quellen
-            </h2>
-            <button 
-              onClick={onClose}
-              className="p-2"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-          </div>
-          {content}
-        </div>
-      </motion.div>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-0 bg-white/95 shadow-lg z-50 backdrop-blur-sm"
+          >
+            <div className="flex flex-col h-full">
+              <div className="p-4 border-b flex justify-between items-center">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <BookOpen className="w-5 h-5" /> Quellen
+                </h2>
+                <button 
+                  onClick={() => {
+                    onClose?.();
+                    onToggleSources?.(null);
+                  }}
+                  className="p-2"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </div>
+              {content}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     );
   }
 

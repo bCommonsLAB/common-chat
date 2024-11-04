@@ -1,47 +1,46 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Message } from '@/types/rag';
-import { useSwipeable } from 'react-swipeable';
+import { ChatMessage, RAGOption } from '@/types/rag';
 import { ChatHistory } from './chat/ChatHistory';
 import { SourcesView } from './sources/SourcesView';
 import { MessageInput } from './chat/MessageInput';
+import { useChatContext } from '@/context/ChatContext';
 
 interface RAGInterfaceProps {
   chatContent: string;
+  ragOption: RAGOption;
 }
 
-const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) => {
+  const { messages: contextMessages, addMessage } = useChatContext();
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [activeMessageId, setActiveMessageId] = useState<number | null>(null);
   const [isMobileSourcesOpen, setIsMobileSourcesOpen] = useState(false);
-
-  const swipeHandlers = useSwipeable({
-    onSwipedRight: () => setIsMobileSourcesOpen(false),
-    trackMouse: true
-  });
+  const [isMobile, setIsMobile] = useState(false);
 
   const handleToggleSources = (messageId: number) => {
     setActiveMessageId(messageId === activeMessageId ? null : messageId);
     setIsMobileSourcesOpen(true);
   };
 
+  
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
     
-    const userMessage: Message = {
-      id: messages.length + 1,
+
+    const userMessage: ChatMessage = {
+      id: contextMessages.length + 1,
+      role: 'user',
       content: newMessage,
-      isUser: true,
       timestamp: new Date().toLocaleTimeString([], { 
         hour: '2-digit', 
         minute: '2-digit' 
       })
     };
     
-    setMessages(prev => [...prev, userMessage]);
+    addMessage(userMessage);
     setNewMessage("");
 
     try {
@@ -58,11 +57,11 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent }) => {
       }
       
       const data = await response.json();
-
-      const assistantMessage: Message = {
-        id: messages.length + 2,
+      const messageId = contextMessages.length + 2;
+      const assistantMessage: ChatMessage = {
+        id: messageId,
+        role: 'assistant',
         content: data.content,
-        isUser: false,
         timestamp: new Date().toLocaleTimeString([], { 
           hour: '2-digit', 
           minute: '2-digit' 
@@ -70,14 +69,16 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent }) => {
         sources: data.sources
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      addMessage(assistantMessage);
+      setActiveMessageId(messageId);
+      
     } catch (error) {
       console.error('Fehler beim Senden der Nachricht:', error);
       // Hier können Sie einen Fehlerstatus setzen und dem Nutzer anzeigen
     }
   };
 
-  const activeSources = messages.find(m => m.id === activeMessageId)?.sources || [];
+  const activeSources = contextMessages.find(m => m.id === activeMessageId)?.sources || [];
 
   // Handler zum Schließen der Quellen bei Klick auf den Chat
   const handleChatClick = () => {
@@ -88,17 +89,32 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent }) => {
 
   // Initialisierung beim Laden
   useEffect(() => {
-    setMessages([{
+    addMessage({
       id: 1,
-      content: "Hello! How can I help you today?",
-      isUser: false,
+      content: ragOption.welcomeMessage,
+      role: 'assistant',
       timestamp: new Date().toLocaleTimeString([], { 
         hour: '2-digit', 
         minute: '2-digit' 
       }),
       sources: []
-    }]);
+    });
     setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768); // 768px ist der übliche Breakpoint für Tablets/Mobile
+    };
+
+    // Initial check
+    checkIsMobile();
+
+    // Event Listener für Größenänderungen
+    window.addEventListener('resize', checkIsMobile);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
   return (
@@ -109,11 +125,10 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent }) => {
         <div className="flex w-full">
           {/* Chat-Bereich */}
           <div 
-            className="w-1/2 flex flex-col h-screen"
+            className="w-full md:w-1/2 flex flex-col h-screen"
             onClick={handleChatClick}
           >
             <ChatHistory 
-              messages={messages}
               onToggleSources={handleToggleSources}
               activeMessageId={activeMessageId}
               onSourceClick={handleToggleSources}
@@ -126,11 +141,27 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent }) => {
             />
           </div>
 
-          {/* Sources-Bereich */}
-          <div className="w-1/2 border-l">
-            {activeMessageId && <SourcesView sources={activeSources} />}
+          {/* Desktop Sources-Bereich */}
+          <div className="hidden md:block md:w-1/2 border-l">
+            <SourcesView 
+              sources={activeSources} 
+              className="h-full"
+            />
           </div>
         </div>
+      )}
+
+      {/* Mobile Sources-Bereich */}
+      {isMobile && (
+        <SourcesView 
+          sources={activeSources}
+          isMobile={true}
+          isOpen={isMobileSourcesOpen}
+          onClose={() => {
+            setIsMobileSourcesOpen(false);
+            setActiveMessageId(null);
+          }}
+        />
       )}
     </div>
   );

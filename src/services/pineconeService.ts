@@ -1,7 +1,7 @@
 import { Index, Pinecone } from '@pinecone-database/pinecone';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { ChatOpenAI } from '@langchain/openai';
-import { Message, Source, StructuredSource } from '@/types/rag';
+import { ChatMessage, Source, StructuredSource } from '@/types/rag';
 import { analyseSourceDocuments, restructureDocuments } from './ragService';
 
 export class PineconeService {
@@ -10,24 +10,23 @@ export class PineconeService {
   private llm: ChatOpenAI;
 
   private constructor() {
-    console.log('PineconeService constructor');
     this.pinecone = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY!,
     });
-    console.log('Pinecone instance created:', this.pinecone);
+    //console.log('Pinecone instance created:', this.pinecone);
 
     this.embeddings = new OpenAIEmbeddings({
       openAIApiKey: process.env.OPENAI_API_KEY!,
       modelName: "text-embedding-3-large",
     });
-    console.log('OpenAIEmbeddings initialized:', this.embeddings);
+    //console.log('OpenAIEmbeddings initialized:', this.embeddings);
 
     this.llm = new ChatOpenAI({
       openAIApiKey: process.env.OPENAI_API_KEY!,
       temperature: 0.6,
       modelName: "gpt-4o"
     });
-    console.log('ChatOpenAI LLM initialized with temperature:', this.llm.temperature);
+    //console.log('ChatOpenAI LLM initialized with temperature:', this.llm.temperature);
   }
 
   public static async create(): Promise<PineconeService> {
@@ -38,18 +37,18 @@ export class PineconeService {
 
   /*
   private async initPinecone() {
-    console.log('Fetching Pinecone index', process.env.PINECONE_INDEX);
+    // console.log('Fetching Pinecone index', process.env.PINECONE_INDEX);
     const index: PineconeIndex = this.pinecone.index(process.env.PINECONE_INDEX!);
     try {
       //const indexStats = await index.describeIndexStats();
-      //console.log('Pinecone Index Statistics:', indexStats);
+      // console.log('Pinecone Index Statistics:', indexStats);
     } catch (error) {
       console.error('Failed to fetch Pinecone index statistics:', error);
     }
   }
   */
 
-  async query(message: string, chatContent: string): Promise<Message> {
+  async query(question: string, chatContent: string): Promise<ChatMessage> {
     /*if (!this.pinecone) {
       await this.initPinecone();
     }*/
@@ -58,12 +57,12 @@ export class PineconeService {
     
     try {
       // Embedding erstellen
-      const questionEmbedding = await this.embeddings.embedQuery(message)
+      const questionEmbedding = await this.embeddings.embedQuery(question)
         .catch(error => {
           console.error('Fehler beim Erstellen des Embeddings:', error);
           throw new Error('Embedding konnte nicht erstellt werden.');
         });
-      console.log('Embedding erfolgreich erstellt:', questionEmbedding);
+      // console.log('Embedding erfolgreich erstellt:', questionEmbedding);
       
       // Pinecone Abfrage mit der neuen SDK-Syntax
       const queryResponse = await index.query({
@@ -80,9 +79,19 @@ export class PineconeService {
         throw new Error('Hmm, bin mir nicht sicher. Entweder fehlt mir die notwendige Information oder kannst du bitte die Frage präziser formulieren?');
       }
 
-      const relevantTexts = queryResponse.matches.map(match => match.metadata);
-      console.log('relevantTexts:', relevantTexts);
+      let relevantTexts = queryResponse.matches.map(match => match.metadata);
+      // console.log('relevantTexts:', relevantTexts);
       // Generiere die Antwort
+
+      /*
+      const chatHistoryPrompt = `
+        Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
+
+        Chat History: ${chatHistory}
+        Follow Up Input: ${question}
+      `;
+      */
+
       const prompt = `
         Sie sind ein hilfreicher Assistent. Beantworten Sie die Frage des Benutzers anhand des bereitgestellten Kontexts so gut wie möglich und nutzen Sie dabei die bereitgestellten Ressourcen.
         Wenn es im Kontext nichts gibt, was für die Frage relevant ist, sagen Sie einfach „Hmm, bin mir nicht sicher. Entweder fehlt mir die notwendige Information oder kannst du bitte die Frage präziser formulieren?“ Versuchen Sie nicht, sich eine Antwort auszudenken.
@@ -90,7 +99,7 @@ export class PineconeService {
         Kontext:
         ${relevantTexts.map((doc, index) => `<doc id='${index}'>${doc?.text || ''}</doc>`).join('\n')}
 
-        Frage: ${message}
+        Frage: ${question}
 
         Antwort:`;
 
@@ -100,7 +109,9 @@ export class PineconeService {
           throw new Error('Die Antwort konnte nicht generiert werden.');
         });
 
-
+      if(answer.includes("Hmm, bin mir nicht sicher.")) {
+        relevantTexts = []
+      }
       const sourceDocuments=relevantTexts.map(doc => ({
         pageContent: doc?.text || '',
         metadata: {
@@ -129,7 +140,7 @@ export class PineconeService {
       return {
         id: Date.now(),
         content: answer || "Es gab einen Fehler bei der Verarbeitung der Anfrage.",
-        isUser: false,
+        role: 'assistant',
         timestamp: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
         sources:  restructuredDocuments
       };
@@ -139,7 +150,7 @@ export class PineconeService {
       return {
         id: Date.now(),
         content: `Es ist ein Fehler aufgetreten: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`,
-        isUser: false,
+        role: 'assistant',
         timestamp: new Date().toLocaleTimeString('de-DE', {
           hour: '2-digit',
           minute: '2-digit'

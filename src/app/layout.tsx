@@ -1,17 +1,9 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
+import { Header } from '@/components/Header';
+import MainFooter from '@/components/MainFooter';
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+import { ChatProvider } from '@/context/ChatContext';
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -20,15 +12,24 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body>
+        <ChatProvider 
+          initialRAG={null}
+          initialContent={null}
+        >
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <main className="flex-grow container mx-auto px-4 py-8">
+              {children}
+            </main>
+            <MainFooter />
+          </div>
+        </ChatProvider>
       </body>
     </html>
   );

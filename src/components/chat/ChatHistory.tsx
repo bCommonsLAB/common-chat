@@ -1,10 +1,9 @@
 import React from 'react';
-import { Message } from '@/types/rag';
-import { ChatMessage } from './ChatMessage';
+import { ChatMessageItem } from './ChatMessage';
 import { MessageCircle } from 'lucide-react';
+import { useChatContext } from '@/context/ChatContext';
 
 interface ChatHistoryProps {
-  messages: Message[];
   activeMessageId: number | null;
   onToggleSources: (messageId: number) => void;
   onClick?: () => void;
@@ -12,12 +11,13 @@ interface ChatHistoryProps {
 }
 
 export const ChatHistory: React.FC<ChatHistoryProps> = ({
-  messages,
   activeMessageId,
   onToggleSources,
   onClick,
   onSourceClick
 }) => {
+  const { messages } = useChatContext();
+  
   return (
     <div 
       className="w-full flex flex-col border-r"
@@ -31,7 +31,7 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({
       
       <div className="flex-1 overflow-y-auto p-4">
         {messages.map((message) => (
-          <ChatMessage
+          <ChatMessageItem
             key={message.id}
             message={message}
             onToggleSources={onToggleSources}

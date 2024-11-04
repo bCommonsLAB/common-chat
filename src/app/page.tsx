@@ -1,9 +1,6 @@
-import RAGInterface from "@/components/RAGInterface";
+import RAGList from '@/components/RAGList';
+import { AVAILABLE_RAGS } from '@/types/rag';
 
-export default function Home() {
-  return (
-    <main className="min-h-screen">
-      <RAGInterface />
-    </main>
-  );
+export default function HomePage() {
+  return <RAGList rags={AVAILABLE_RAGS} />;
 }
