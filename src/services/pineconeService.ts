@@ -3,17 +3,20 @@ import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatMessage, Source, StructuredSource } from '@/types/rag';
 import { analyseSourceDocuments, restructureDocuments } from './ragService';
+import { useChatContext } from '@/context/ChatContext';
 
 export class PineconeService {
   private pinecone: Pinecone;
   private embeddings: OpenAIEmbeddings;
   private llm: ChatOpenAI;
+  private pineconeIndex: string;
 
-  private constructor() {
+  private constructor(pineconeIndex: string) {
+    this.pineconeIndex = pineconeIndex;
     this.pinecone = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY!,
     });
-    //console.log('Pinecone instance created:', this.pinecone);
+    console.log('Pinecone instance created:', this.pinecone);
 
     this.embeddings = new OpenAIEmbeddings({
       openAIApiKey: process.env.OPENAI_API_KEY!,
@@ -29,31 +32,14 @@ export class PineconeService {
     //console.log('ChatOpenAI LLM initialized with temperature:', this.llm.temperature);
   }
 
-  public static async create(): Promise<PineconeService> {
-    const service = new PineconeService();
-    //await service.initPinecone();
+  public static async create(pineconeIndex: string): Promise<PineconeService> {
+    const service = new PineconeService(pineconeIndex);
     return service;
   }
 
-  /*
-  private async initPinecone() {
-    // console.log('Fetching Pinecone index', process.env.PINECONE_INDEX);
-    const index: PineconeIndex = this.pinecone.index(process.env.PINECONE_INDEX!);
-    try {
-      //const indexStats = await index.describeIndexStats();
-      // console.log('Pinecone Index Statistics:', indexStats);
-    } catch (error) {
-      console.error('Failed to fetch Pinecone index statistics:', error);
-    }
-  }
-  */
-
   async query(question: string, chatContent: string): Promise<ChatMessage> {
-    /*if (!this.pinecone) {
-      await this.initPinecone();
-    }*/
-    
-    const index: Index = this.pinecone.index(process.env.PINECONE_INDEX!);
+    console.log('Pinecone index:', this.pineconeIndex);
+    const index: Index = this.pinecone.index(this.pineconeIndex);
     
     try {
       // Embedding erstellen
@@ -159,4 +145,24 @@ export class PineconeService {
       };
     }
   }
+  /*
+  async queryPinecone(query: string, pineconeIndex: string) {
+    try {
+      const response = await fetch('/api/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          query,
+          index: pineconeIndex
+        }),
+      });
+      // ... rest of the function
+    }catch (error) {
+      console.error('Fehler bei der Pinecone-Abfrage:', error);
+      throw error;
+    }
+  }
+  */
 }

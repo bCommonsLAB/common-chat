@@ -1,8 +1,8 @@
-import Link from 'next/link';
 
 interface BreadcrumbItem {
   label: string;
   href: string;
+  onClick?: () => void;
 }
 
 interface BreadcrumbPathProps {
@@ -11,16 +11,22 @@ interface BreadcrumbPathProps {
 
 const BreadcrumbPath: React.FC<BreadcrumbPathProps> = ({ items }) => {
   return (
-    <nav className="text-sm text-gray-600">
+    <nav>
       {items.map((item, index) => (
         <span key={item.href}>
-          {index > 0 && <span className="mx-2">/</span>}
-          <Link 
+          {index > 0 && " / "}
+          <a 
             href={item.href}
-            className="hover:text-gray-900 hover:underline"
+            onClick={(e) => {
+              if (item.onClick) {
+                e.preventDefault();
+                item.onClick();
+              }
+            }}
+            className="hover:underline"
           >
             {item.label}
-          </Link>
+          </a>
         </span>
       ))}
     </nav>

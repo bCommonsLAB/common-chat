@@ -10,7 +10,6 @@ interface SourcesViewProps {
   isMobile?: boolean;
   isOpen?: boolean;
   onClose?: () => void;
-  onToggleSources?: (messageId: string | null) => void;
 }
 
 export const SourcesView: React.FC<SourcesViewProps> = ({
@@ -18,25 +17,8 @@ export const SourcesView: React.FC<SourcesViewProps> = ({
   className,
   isMobile = false,
   isOpen = false,
-  onClose,
-  onToggleSources
+  onClose
 }) => {
-  const content = (
-    <div className="flex-1 overflow-y-auto p-4">
-      {sources.length > 0 ? (
-        <div className="space-y-3">
-          {sources.map((source, index) => (
-            <SourceCard key={index} source={source} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-gray-500 text-center mt-8">
-          Wählen Sie eine Nachricht aus, um die zugehörigen Quellen anzuzeigen
-        </div>
-      )}
-    </div>
-  );
-
   if (isMobile) {
     return (
       <AnimatePresence>
@@ -49,21 +31,19 @@ export const SourcesView: React.FC<SourcesViewProps> = ({
             className="fixed inset-0 bg-white/95 shadow-lg z-50 backdrop-blur-sm"
           >
             <div className="flex flex-col h-full">
-              <div className="p-4 border-b flex justify-between items-center">
+              <div className="p-4 border-b flex justify-between items-center flex-shrink-0">
                 <h2 className="text-xl font-semibold flex items-center gap-2">
                   <BookOpen className="w-5 h-5" /> Quellen
                 </h2>
-                <button 
-                  onClick={() => {
-                    onClose?.();
-                    onToggleSources?.(null);
-                  }}
-                  className="p-2"
-                >
+                <button onClick={onClose} className="p-2">
                   <ChevronRight className="w-6 h-6" />
                 </button>
               </div>
-              {content}
+              <div className="flex-1 overflow-y-auto">
+                {sources.map((source, index) => (
+                  <SourceCard key={index} source={source} />
+                ))}
+              </div>
             </div>
           </motion.div>
         )}
@@ -72,18 +52,30 @@ export const SourcesView: React.FC<SourcesViewProps> = ({
   }
 
   return (
-    <div className={`hidden md:flex flex-col ${className || ''}`}>
-      <div className="p-4 border-b">
+    <div className={`flex flex-col h-full ${className || ''}`}>
+      <div className="p-4 border-b flex-shrink-0">
         <h2 className="text-xl font-semibold flex items-center gap-2">
           <BookOpen className="w-5 h-5" /> Quellen
         </h2>
       </div>
-      <div className="p-4">
-        <p className="text-gray-600 text-sm">
-          Die generierte Antwort ist eine Synthese aus diesen Quellen, die wahrscheinlich mit der gestellten Frage in Bezug stehen
-        </p>
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4 flex-shrink-0">
+          <p className="text-gray-600 text-sm">
+            Die generierte Antwort ist eine Synthese aus diesen Quellen, die wahrscheinlich mit der gestellten Frage in Bezug stehen
+          </p>
+        </div>
+        {sources.length > 0 ? (
+          <div className="space-y-3 p-4">
+            {sources.map((source, index) => (
+              <SourceCard key={index} source={source} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-gray-500 text-center mt-8">
+            Wählen Sie eine Nachricht aus, um die zugehörigen Quellen anzuzeigen
+          </div>
+        )}
       </div>
-      {content}
     </div>
   );
 }; 

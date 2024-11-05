@@ -15,7 +15,13 @@ export async function POST(
         { status: 400 }
       );
     }
-
+    if (!body.pineconeIndex) {
+      return NextResponse.json(
+        { error: 'pineconeIndex is required' },
+        { status: 400 }
+      );
+    } 
+    const pineconeIndex = body.pineconeIndex;
     const chatContent = (await params)?.chatContent;
 
     // FLOWISE Version
@@ -24,7 +30,7 @@ export async function POST(
 
     // PINECONE Version
     // Initialisiere Service
-    const pineconeService = await PineconeService.create()
+    const pineconeService = await PineconeService.create(pineconeIndex)
       .catch(error => {
         console.error('Failed to initialize PineconeService:', error);
         throw new Error('Service initialization failed');

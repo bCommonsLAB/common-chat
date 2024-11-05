@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Header } from '@/components/Header';
-import MainFooter from '@/components/MainFooter';
+import { MainFooter } from '@/components/MainFooter';
 
 import { ChatProvider } from '@/context/ChatContext';
 
@@ -16,15 +16,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="de">
       <body>
         <ChatProvider 
           initialRAG={null}
           initialContent={null}
         >
-          <div className="min-h-screen flex flex-col">
+          <div className="h-screen flex flex-col">
             <Header />
-            <main className="flex-grow container mx-auto px-4 py-8">
+            <main className="flex-1 overflow-hidden">
               {children}
             </main>
             <MainFooter />

@@ -20,10 +20,10 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({
   
   return (
     <div 
-      className="w-full flex flex-col border-r"
+      className="w-full flex flex-col h-full"
       onClick={onClick}
     >
-      <div className="p-4 border-b">
+      <div className="p-4 border-b flex-shrink-0">
         <h2 className="text-xl font-semibold flex items-center gap-2">
           <MessageCircle className="w-5 h-5" /> Chat
         </h2>

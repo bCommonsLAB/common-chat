@@ -13,25 +13,35 @@ interface RAGInterfaceProps {
 }
 
 const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) => {
-  const { messages: contextMessages, addMessage } = useChatContext();
+  const { 
+    messages, 
+    addMessage, 
+    setCurrentRAG, 
+    setChatContent, 
+    clearChat 
+  } = useChatContext();
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [activeMessageId, setActiveMessageId] = useState<number | null>(null);
   const [isMobileSourcesOpen, setIsMobileSourcesOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  useEffect(() => {
+    clearChat();
+    setCurrentRAG(ragOption);
+    setChatContent(chatContent);
+  }, [chatContent, ragOption]);
+
   const handleToggleSources = (messageId: number) => {
     setActiveMessageId(messageId === activeMessageId ? null : messageId);
     setIsMobileSourcesOpen(true);
   };
 
-  
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
-    
 
     const userMessage: ChatMessage = {
-      id: contextMessages.length + 1,
+      id: messages.length + 1,
       role: 'user',
       content: newMessage,
       timestamp: new Date().toLocaleTimeString([], { 
@@ -39,7 +49,7 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) =
         minute: '2-digit' 
       })
     };
-    
+
     addMessage(userMessage);
     setNewMessage("");
 
@@ -49,7 +59,7 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) =
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: newMessage }),
+        body: JSON.stringify({ message: newMessage, pineconeIndex: ragOption.pineconeIndex }),
       });
       
       if (!response.ok) {
@@ -57,7 +67,7 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) =
       }
       
       const data = await response.json();
-      const messageId = contextMessages.length + 2;
+      const messageId = messages.length + 2;
       const assistantMessage: ChatMessage = {
         id: messageId,
         role: 'assistant',
@@ -78,7 +88,7 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) =
     }
   };
 
-  const activeSources = contextMessages.find(m => m.id === activeMessageId)?.sources || [];
+  const activeSources = messages.find(m => m.id === activeMessageId)?.sources || [];
 
   // Handler zum Schließen der Quellen bei Klick auf den Chat
   const handleChatClick = () => {
@@ -89,16 +99,16 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) =
 
   // Initialisierung beim Laden
   useEffect(() => {
-    addMessage({
-      id: 1,
-      content: ragOption.welcomeMessage,
-      role: 'assistant',
-      timestamp: new Date().toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      }),
-      sources: []
-    });
+    // Prüfen ob bereits Nachrichten existieren
+    if (messages.length === 0) {
+      addMessage({
+        id: 0,
+        content: ragOption.welcomeMessage,
+        role: 'assistant',
+        timestamp: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
+        sources: []
+      });
+    }
     setIsLoading(false);
   }, []);
 
@@ -118,52 +128,54 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) =
   }, []);
 
   return (
-    <div className="flex h-screen max-h-screen bg-gray-50">
-      {isLoading ? (
-        <div>Loading...</div>
-      ) : (
-        <div className="flex w-full">
-          {/* Chat-Bereich */}
-          <div 
-            className="w-full md:w-1/2 flex flex-col h-screen"
-            onClick={handleChatClick}
-          >
+    <div className="flex flex-col md:flex-row h-full w-full">
+      {/* chat/sources Bereich */}
+      <div className="flex-1">
+        <div className="flex flex-col h-full">
+        {/* chat Bereich */}
+          <div className="flex-1 overflow-y-auto">
             <ChatHistory 
               onToggleSources={handleToggleSources}
               activeMessageId={activeMessageId}
               onSourceClick={handleToggleSources}
             />
-            
+          </div>
+          <div className="p-4 border-t">
             <MessageInput
               value={newMessage}
               onChange={setNewMessage}
               onSend={handleSendMessage}
             />
           </div>
-
-          {/* Desktop Sources-Bereich */}
-          <div className="hidden md:block md:w-1/2 border-l">
-            <SourcesView 
-              sources={activeSources} 
-              className="h-full"
-            />
+        </div>
+      </div>
+      {/* Desktop Sources-Bereich */}
+      {!isMobile && (
+        <div className="flex-1">
+          <div className="flex flex-col h-full">
+            <div className="flex-1 overflow-y-auto">
+              <SourcesView 
+                sources={activeSources}
+              />
+            </div>
           </div>
         </div>
       )}
-
       {/* Mobile Sources-Bereich */}
       {isMobile && (
-        <SourcesView 
-          sources={activeSources}
-          isMobile={true}
-          isOpen={isMobileSourcesOpen}
-          onClose={() => {
-            setIsMobileSourcesOpen(false);
-            setActiveMessageId(null);
-          }}
-        />
+        <div className="flex-1 ml-4 mt-4 mb-4">
+          <SourcesView 
+            sources={activeSources}
+            isMobile={true}
+            isOpen={isMobileSourcesOpen}
+            onClose={() => {
+              setIsMobileSourcesOpen(false);
+              setActiveMessageId(null);
+            }}
+          />
+        </div>
       )}
-    </div>
+  </div>
   );
 };
 

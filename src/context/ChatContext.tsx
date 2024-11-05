@@ -3,13 +3,14 @@
 import { RAGOption, ChatMessage } from '@/types/rag';
 import { createContext, useContext, ReactNode, useState } from 'react';
 
-
 interface ChatContextType {
   currentRAG: RAGOption | null;
   chatContent: string | null;
   messages: ChatMessage[];
   addMessage: (message: ChatMessage) => void;
   clearChat: () => void;
+  setCurrentRAG: (rag: RAGOption | null) => void;
+  setChatContent: (content: string | null) => void;
 }
 
 const ChatContext = createContext<ChatContextType>({
@@ -17,7 +18,9 @@ const ChatContext = createContext<ChatContextType>({
   chatContent: null,
   messages: [],
   addMessage: () => {},
-  clearChat: () => {}
+  clearChat: () => {},
+  setCurrentRAG: () => {},
+  setChatContent: () => {}
 });
 
 export const ChatProvider: React.FC<{
@@ -25,10 +28,11 @@ export const ChatProvider: React.FC<{
   initialRAG: RAGOption | null;
   initialContent: string | null;
 }> = ({ children, initialRAG, initialContent }) => {
+  const [currentRAG, setCurrentRAG] = useState<RAGOption | null>(initialRAG);
+  const [chatContent, setChatContent] = useState<string | null>(initialContent);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const addMessage = (message: ChatMessage) => {
-    console.log("addMessage", message);
     setMessages(prev => [...prev, message]);
   };
 
@@ -38,15 +42,17 @@ export const ChatProvider: React.FC<{
 
   return (
     <ChatContext.Provider value={{
-      currentRAG: initialRAG,
-      chatContent: initialContent,
+      currentRAG,
+      chatContent,
       messages,
       addMessage,
-      clearChat
+      clearChat,
+      setCurrentRAG,
+      setChatContent
     }}>
       {children}
     </ChatContext.Provider>
   );
-}
+};
 
-export const useChatContext = () => useContext(ChatContext); 
+export const useChatContext = () => useContext(ChatContext);
