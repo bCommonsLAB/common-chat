@@ -3,7 +3,6 @@ import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatMessage, Source, StructuredSource } from '@/types/rag';
 import { analyseSourceDocuments, restructureDocuments } from './ragService';
-import { useChatContext } from '@/context/ChatContext';
 
 export class PineconeService {
   private pinecone: Pinecone;
@@ -20,14 +19,14 @@ export class PineconeService {
 
     this.embeddings = new OpenAIEmbeddings({
       openAIApiKey: process.env.OPENAI_API_KEY!,
-      modelName: "text-embedding-3-large",
+      modelName: process.env.OPENAI_EMBEDDINGS_MODEL_NAME!,
     });
     //console.log('OpenAIEmbeddings initialized:', this.embeddings);
 
     this.llm = new ChatOpenAI({
       openAIApiKey: process.env.OPENAI_API_KEY!,
-      temperature: 0.6,
-      modelName: "gpt-4o"
+      temperature: parseFloat(process.env.OPENAI_CHAT_TEMPERATURE!),
+      modelName: process.env.OPENAI_CHAT_MODEL_NAME!
     });
     //console.log('ChatOpenAI LLM initialized with temperature:', this.llm.temperature);
   }
