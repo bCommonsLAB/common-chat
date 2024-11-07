@@ -102,53 +102,5 @@ export const AVAILABLE_RAGS: RAGOption[] = [
     footerText: 'Powered by b*commonsLAB',
     companyLink: 'https://www.bcommonslab.org',
     pineconeIndex: 'freifairlebendig'
-  },
-  {
-    id: 'freifairlebendig1',
-    name: 'Frei Fair und Lebendig',
-    title: 'Frei Fair und Lebendig',
-    description: 'Chatbot für Fragen an das Buch "Frei Fair und Lebendig" von Silke Helfrich und David Bollier',
-    titleAvatarSrc: 'https://example.com/avatar.png',
-    welcomeMessage: 'Wilkommen, ich bin ein Chatbot, trainiert mit dem Buch "Frei, Fair und Lebendig - Die Macht des Commons" von Silke Helfrich und David Bollier. Du kannst mich gerne zum Inhalt dieses Buches befragen.',
-    errorMessage: 'Etwas ist schiefgegangen. Versuche es bitte nochmal.',
-    url: '/freifairlebendig',
-    placeholder: 'Schreibe deine Frage...',
-    maxChars: 500,
-    maxCharsWarningMessage: 'Deine Frage ist zu lang, bitte kürze sie.',
-    footerText: 'Powered by b*commonsLAB',
-    companyLink: 'https://www.bcommonslab.org',
-    pineconeIndex: 'freifairlebendig'
-  },
-  {
-    id: 'freifairlebendig2',
-    name: 'Frei Fair und Lebendig',
-    title: 'Frei Fair und Lebendig',
-    description: 'Chatbot für Fragen an das Buch "Frei Fair und Lebendig" von Silke Helfrich und David Bollier',
-    titleAvatarSrc: 'https://example.com/avatar.png',
-    welcomeMessage: 'Wilkommen, ich bin ein Chatbot, trainiert mit dem Buch "Frei, Fair und Lebendig - Die Macht des Commons" von Silke Helfrich und David Bollier. Du kannst mich gerne zum Inhalt dieses Buches befragen.',
-    errorMessage: 'Etwas ist schiefgegangen. Versuche es bitte nochmal.',
-    url: '/freifairlebendig',
-    placeholder: 'Schreibe deine Frage...',
-    maxChars: 500,
-    maxCharsWarningMessage: 'Deine Frage ist zu lang, bitte kürze sie.',
-    footerText: 'Powered by b*commonsLAB',
-    companyLink: 'https://www.bcommonslab.org',
-    pineconeIndex: 'freifairlebendig'
-  },
-  {
-    id: 'freifairlebendig3',
-    name: 'Frei Fair und Lebendig',
-    title: 'Frei Fair und Lebendig',
-    description: 'Chatbot für Fragen an das Buch "Frei Fair und Lebendig" von Silke Helfrich und David Bollier',
-    titleAvatarSrc: 'https://example.com/avatar.png',
-    welcomeMessage: 'Wilkommen, ich bin ein Chatbot, trainiert mit dem Buch "Frei, Fair und Lebendig - Die Macht des Commons" von Silke Helfrich und David Bollier. Du kannst mich gerne zum Inhalt dieses Buches befragen.',
-    errorMessage: 'Etwas ist schiefgegangen. Versuche es bitte nochmal.',
-    url: '/freifairlebendig',
-    placeholder: 'Schreibe deine Frage...',
-    maxChars: 500,
-    maxCharsWarningMessage: 'Deine Frage ist zu lang, bitte kürze sie.',
-    footerText: 'Powered by b*commonsLAB',
-    companyLink: 'https://www.bcommonslab.org',
-    pineconeIndex: 'freifairlebendig'
   }
 ];

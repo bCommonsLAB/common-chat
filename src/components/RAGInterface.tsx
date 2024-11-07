@@ -33,12 +33,21 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) =
   }, [chatContent, ragOption]);
 
   const handleToggleSources = (messageId: number) => {
-    setActiveMessageId(messageId === activeMessageId ? null : messageId);
-    setIsMobileSourcesOpen(true);
+    if (activeMessageId === messageId) {
+      // Quellenansicht schließen, wenn dieselbe Nachricht erneut ausgewählt wird
+      setActiveMessageId(null);
+      setIsMobileSourcesOpen(false);
+    } else {
+      // Neue Nachricht auswählen und Quellenansicht öffnen
+      setActiveMessageId(messageId);
+      setIsMobileSourcesOpen(true);
+    }
   };
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
+
+    setIsLoading(true);
 
     const userMessage: ChatMessage = {
       id: messages.length + 1,
@@ -85,6 +94,8 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) =
     } catch (error) {
       console.error('Fehler beim Senden der Nachricht:', error);
       // Hier können Sie einen Fehlerstatus setzen und dem Nutzer anzeigen
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -127,30 +138,41 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) =
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
-  return (
-    <div className="flex flex-col md:flex-row h-full w-full">
-      {/* chat/sources Bereich */}
-      <div className="flex-1">
-        <div className="flex flex-col h-full">
-        {/* chat Bereich */}
-          <div className="flex-1 overflow-y-auto">
-            <ChatHistory 
-              onToggleSources={handleToggleSources}
-              activeMessageId={activeMessageId}
-              onSourceClick={handleToggleSources}
-            />
-          </div>
-          <div className="p-4 border-t">
-            <MessageInput
-              value={newMessage}
-              onChange={setNewMessage}
-              onSend={handleSendMessage}
-            />
+  useEffect(() => {
+    console.log('Active Sources:', activeSources);
+  }, [activeSources]);
+
+  const LoadingOverlay = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-100 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  );
+
+  if (!isMobile) {
+    return (
+      <div className="flex flex-col md:flex-row h-full w-full">
+        {/* chat/sources Bereich */}
+        <div className="flex-1">
+          <div className="flex flex-col h-full">
+          {/* chat Bereich */}
+            <div className="flex-1 overflow-y-auto">
+              <ChatHistory 
+                onToggleSources={handleToggleSources}
+                activeMessageId={activeMessageId}
+                onSourceClick={handleToggleSources}
+              />
+            </div>
+            <div className="p-4 border-t">
+              <MessageInput
+                value={newMessage}
+                onChange={setNewMessage}
+                onSend={handleSendMessage}
+              />
+            </div>
           </div>
         </div>
-      </div>
-      {/* Desktop Sources-Bereich */}
-      {!isMobile && (
+        {/* Desktop Sources-Bereich */}
+      
         <div className="flex-1">
           <div className="flex flex-col h-full">
             <div className="flex-1 overflow-y-auto">
@@ -160,23 +182,50 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) =
             </div>
           </div>
         </div>
-      )}
-      {/* Mobile Sources-Bereich */}
-      {isMobile && (
-        <div className="flex-1 ml-4 mt-4 mb-4">
-          <SourcesView 
-            sources={activeSources}
-            isMobile={true}
-            isOpen={isMobileSourcesOpen}
-            onClose={() => {
-              setIsMobileSourcesOpen(false);
-              setActiveMessageId(null);
-            }}
-          />
-        </div>
-      )}
-  </div>
-  );
+  
+        {/* Loading Overlay */}
+        {isLoading && <LoadingOverlay />}
+      </div>
+    )
+  } else {
+    return (
+      <div className="h-full w-full relative">
+        {/* chat/sources Bereich */}
+          <div className="flex flex-col h-full">
+          {/* chat Bereich */}
+            <div className="flex-1 overflow-y-auto" onClick={handleChatClick}>
+              <ChatHistory 
+                onToggleSources={handleToggleSources}
+                activeMessageId={activeMessageId}
+                onSourceClick={handleToggleSources}
+              />
+            </div>
+            <div className="p-4 border-t">
+              <MessageInput
+                value={newMessage}
+                onChange={setNewMessage}
+                onSend={handleSendMessage}
+              />
+            </div>
+          </div>
+          {/* Mobile Sources-Bereich */}
+          {isMobileSourcesOpen && (
+            <div className={`fixed inset-0 z-50 bg-white  transform transition-transform duration-300 ${isMobileSourcesOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+              <SourcesView 
+                sources={activeSources}
+                isMobile={true}
+                isOpen={isMobileSourcesOpen}
+                onClose={() => {
+                  setIsMobileSourcesOpen(false);
+                  setActiveMessageId(null);
+                }}
+              />
+            </div>
+          )}
+          {isLoading && <LoadingOverlay />}
+      </div>
+    )
+  }
 };
 
 export default RAGInterface;
