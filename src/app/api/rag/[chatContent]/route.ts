@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PineconeService } from '@/services/pineconeService';
-// import { sendMessageToFlowise } from '@/services/ragService';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { chatContent: string } }
+  context: { params: Promise<{ chatContent: string }> }
 ) {
   try {
+    const { chatContent } = await context.params;
+    
     // Validiere request body
     const body = await request.json();
     if (!body.message) {
@@ -21,16 +22,9 @@ export async function POST(
         { status: 400 }
       );
     } 
-    const pineconeIndex = body.pineconeIndex;
-    const chatContent = (await params)?.chatContent;
-
-    // FLOWISE Version
-    // const flowiseResponse = await sendMessageToFlowise(body.message, chatContent);
-    // return NextResponse.json(flowiseResponse);
 
     // PINECONE Version
-    // Initialisiere Service
-    const pineconeService = await PineconeService.create(pineconeIndex)
+    const pineconeService = await PineconeService.create(body.pineconeIndex)
       .catch(error => {
         console.error('Failed to initialize PineconeService:', error);
         throw new Error('Service initialization failed');
@@ -42,8 +36,6 @@ export async function POST(
 
   } catch (error) {
     console.error('Error in RAG API:', error);
-    
-    // Bessere Fehlermeldungen
     const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
     const status = error instanceof Error && error.message === 'Message is required' ? 400 : 500;
     

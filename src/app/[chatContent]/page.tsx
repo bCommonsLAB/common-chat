@@ -1,9 +1,13 @@
+'use client';
+
+import { useParams } from 'next/navigation';
 import RAGInterface from '@/components/RAGInterface';
 import RAGList from '@/components/RAGList';
 import { AVAILABLE_RAGS } from '@/types/rag';
 
-export default function RAGPage({ params }: { params: { chatContent: string } }) {
-  const chatContent = params.chatContent;
+export default function RAGPage() {
+  const params = useParams();
+  const chatContent = params.chatContent as string;
   const validRAGs = AVAILABLE_RAGS.map(rag => rag.id);
   const ragOption = AVAILABLE_RAGS.find(rag => rag.id === chatContent);
   
