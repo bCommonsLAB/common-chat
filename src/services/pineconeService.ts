@@ -1,7 +1,7 @@
 import { Index, Pinecone } from '@pinecone-database/pinecone';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { ChatOpenAI } from '@langchain/openai';
-import { ChatMessage, Source, StructuredSource } from '@/types/rag';
+import { ChatMessage, Source, StructuredSource, SourceDocument } from '@/types/rag';
 import { analyseSourceDocuments, restructureDocuments } from './ragService';
 
 export class PineconeService {
@@ -119,7 +119,7 @@ export class PineconeService {
       }));
       
 
-      const sources: Source[] = analyseSourceDocuments(sourceDocuments, chatContent)
+      const sources: Source[] = analyseSourceDocuments(sourceDocuments as SourceDocument[], chatContent)
       const restructuredDocuments: StructuredSource[] = restructureDocuments(sources);
 
       return {

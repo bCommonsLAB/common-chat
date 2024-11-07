@@ -1,3 +1,14 @@
+
+export interface SourceDocument {
+  metadata: {
+    source: string;
+    'loc.pageNumber': number;
+    imageUrl?: string;
+  };
+  pageContent: string;
+}
+
+
 export interface StructuredSource {
   title: string;
   author: string;

@@ -1,4 +1,4 @@
-import { Source, ChatMessage, StructuredSource } from '@/types/rag';
+import { Source, ChatMessage, StructuredSource, SourceDocument } from '@/types/rag';
 
 
 export async function sendMessageToFlowise(message: string, chatContent: string): Promise<ChatMessage> {
@@ -41,10 +41,10 @@ export async function sendMessageToFlowise(message: string, chatContent: string)
   };
 }
 
-export function analyseSourceDocuments(sourceDocuments: any[], chatContent: string): Source[] {
-  return (sourceDocuments ?? []).map((doc: any) => {
-    
-    const filename = doc.metadata.source.split('\\').pop();
+export function analyseSourceDocuments(sourceDocuments: SourceDocument[], chatContent: string): Source[] {
+  return (sourceDocuments ?? []).map((doc: SourceDocument) => {
+    if(!doc.metadata.source) return undefined;
+    const filename = doc.metadata.source.split('\\').pop() || '';
     if(chatContent === "biodiv") {
       //Glaser_2005_SiedlungsdichteHabitatwahl&GefährdungssituationVonAmeisenInPraderSand&SchludernserAu_Gredleriana_5_p.pdf
       

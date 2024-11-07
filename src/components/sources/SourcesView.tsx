@@ -41,7 +41,7 @@ export const SourcesView: React.FC<SourcesViewProps> = ({
               </div>
               <div className="flex-1 overflow-y-auto">
                 {sources.map((source, index) => (
-                  <SourceCard key={index} source={source} />
+                  <SourceCard key={"mobile-"+index} source={source} />
                 ))}
               </div>
             </div>
@@ -67,7 +67,7 @@ export const SourcesView: React.FC<SourcesViewProps> = ({
         {sources.length > 0 ? (
           <div className="space-y-3 p-4">
             {sources.map((source, index) => (
-              <SourceCard key={index} source={source} />
+              <SourceCard key={"desktop-"+index} source={source} />
             ))}
           </div>
         ) : (
