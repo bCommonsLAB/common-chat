@@ -52,7 +52,7 @@ export class PineconeService {
       // Pinecone Abfrage mit der neuen SDK-Syntax
       const queryResponse = await index.query({
         vector: questionEmbedding,
-        topK: 7,
+        topK: 10,
         includeMetadata: true
       }).catch(error => {
         console.error('Fehler bei der Pinecone-Abfrage:', error);
@@ -78,8 +78,9 @@ export class PineconeService {
       */
 
       const prompt = `
-        Sie sind ein hilfreicher Assistent. Beantworten Sie die Frage des Benutzers anhand des bereitgestellten Kontexts so gut wie möglich und nutzen Sie dabei die bereitgestellten Ressourcen.
-        Wenn es im Kontext nichts gibt, was für die Frage relevant ist, sagen Sie einfach „Hmm, bin mir nicht sicher. Entweder fehlt mir die notwendige Information oder kannst du bitte die Frage präziser formulieren?“ Versuchen Sie nicht, sich eine Antwort auszudenken.
+        Sie sind ein hilfreicher Assistent. Beantworten Sie die Frage des Benutzers anhand des bereitgestellten Dokumenten so gut wie möglich, versuchen sie dabei die bereitgestellten Ressourcen zusammenzufassen.
+        Wenn sie lateinischen Bezeichnungen vorkommen bitte, diese nur in Klammer hinter denen im Volksmund geläufige Namen erklärend angeben. Versuchen sie auch den Ortsbezug zu erklären. Formatieren sie den Text übersichtlich, vermeiden sie lange aufzählungslisten, dann besser beistrich getrennt aufzählen.
+        Versuchen Sie nicht, sich eine Antwort auszudenken.
 
         Kontext:
         ${relevantTexts.map((doc, index) => `<doc id='${index}'>${doc?.text || ''}</doc>`).join('\n')}
@@ -93,10 +94,12 @@ export class PineconeService {
           console.error('Fehler bei der KI-Antwortgenerierung:', error);
           throw new Error('Die Antwort konnte nicht generiert werden.');
         });
-
+      console.log('Antwort:', answer);
+      /*  
       if(answer.includes("Hmm, bin mir nicht sicher.")) {
         relevantTexts = []
       }
+        */
       const sourceDocuments=relevantTexts.map(doc => ({
         pageContent: doc?.text || '',
         metadata: {

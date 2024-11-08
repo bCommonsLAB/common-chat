@@ -1,7 +1,7 @@
 import React from 'react';
 import { BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
-import { ChatMessage } from '@/types/rag' ;
-
+import { ChatMessage } from '@/types/rag';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatMessageProps {
   message: ChatMessage;
@@ -16,7 +16,7 @@ export const ChatMessageItem: React.FC<ChatMessageProps> = ({ message, onToggleS
       <div className="mb-4 flex justify-end">
         <div className="flex flex-col max-w-[90%]">
           <div className="bg-blue-600 text-white rounded-lg p-3">
-            <p>{message.content}</p>
+            <ReactMarkdown>{message.content}</ReactMarkdown>
             <span className="text-xs opacity-75 mt-2 block">{message.timestamp}</span>
           </div>
         </div>
@@ -28,7 +28,9 @@ export const ChatMessageItem: React.FC<ChatMessageProps> = ({ message, onToggleS
     <div className="mb-4">
       <div className="flex flex-col max-w-[90%]">
         <div className="bg-gray-100 rounded-lg p-3 relative">
-          <p>{message.content}</p>
+          <ReactMarkdown className="prose prose-sm max-w-none dark:prose-invert">
+            {message.content}
+          </ReactMarkdown>
           <div className="flex justify-between items-center mt-2">
             <span className="text-xs text-gray-500">{message.timestamp}</span>
             {message.sources && message.sources.length>0 && (
