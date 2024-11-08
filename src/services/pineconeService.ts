@@ -64,7 +64,7 @@ export class PineconeService {
         throw new Error('Hmm, bin mir nicht sicher. Entweder fehlt mir die notwendige Information oder kannst du bitte die Frage präziser formulieren?');
       }
 
-      let relevantTexts = queryResponse.matches.map(match => match.metadata);
+      const relevantTexts = queryResponse.matches.map(match => match.metadata);
       // console.log('relevantTexts:', relevantTexts);
       // Generiere die Antwort
 
