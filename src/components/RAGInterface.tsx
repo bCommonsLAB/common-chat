@@ -153,7 +153,7 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) =
       <div className="flex flex-col md:flex-row h-full w-full">
         {/* chat/sources Bereich */}
         <div className="flex-1">
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full border-r">
           {/* chat Bereich */}
             <div className="flex-1 overflow-y-auto">
               <ChatHistory 
@@ -167,6 +167,7 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) =
                 value={newMessage}
                 onChange={setNewMessage}
                 onSend={handleSendMessage}
+                placeholder={ragOption.placeholder}
               />
             </div>
           </div>
@@ -205,6 +206,7 @@ const RAGInterface: React.FC<RAGInterfaceProps> = ({ chatContent, ragOption }) =
                 value={newMessage}
                 onChange={setNewMessage}
                 onSend={handleSendMessage}
+                placeholder={ragOption.placeholder}
               />
             </div>
           </div>

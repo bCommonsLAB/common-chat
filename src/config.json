@@ -6,7 +6,7 @@
       "title": "Biodiversität in Südtirol",
       "description": "Chatbot für Fragen zur Biodiversität in Südtirol",
       "titleAvatarSrc": "https://img.diva-portal.com/innovation/biodiv/Biodiv%20Avatar.png",
-      "welcomeMessage": "Wilkommen, ich bin ein Chatbot, trainiert mit verschiedenen Texten zur Biodiversität in Südtirol. Du kannst mich gerne zu diesen Themen befragen.",
+      "welcomeMessage": "Hallo! Ich bin dein wissensbasierter Chatbot. Auf deine Fragen hin finde ich passende wissenschaftliche Dokumente zur Biodiversität in Südtirol und nutze deren Inhalte, um dir fundierte Antworten zu geben.",
       "errorMessage": "Etwas ist schiefgegangen. Versuche es bitte nochmal.",
       "url": "/biodiv",
       "placeholder": "Schreibe deine Frage...",

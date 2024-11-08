@@ -5,12 +5,14 @@ interface MessageInputProps {
   value: string;
   onChange: (value: string) => void;
   onSend: () => void;
+  placeholder?: string;
 }
 
 export const MessageInput: React.FC<MessageInputProps> = ({ 
   value, 
   onChange, 
-  onSend 
+  onSend, 
+  placeholder 
 }) => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -19,14 +21,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   return (
-    <div className="p-4 border-t">
+    <div className="p-4">
       <div className="flex gap-2">
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Nachricht eingeben..."
+          placeholder={placeholder ?? "Type a message..."}
           className="flex-1 p-2 border rounded"
         />
         <button
