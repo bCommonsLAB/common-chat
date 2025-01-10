@@ -3,18 +3,41 @@
 import { useParams } from 'next/navigation';
 import RAGInterface from '@/components/RAGInterface';
 import RAGList from '@/components/RAGList';
-import { AVAILABLE_RAGS } from '@/types/rag';
+import { getAllChatbots } from '../actions/chatbots';
+import { useEffect, useState } from 'react';
+import { RAGOption } from '@/types/rag';
+import { useAuth } from '@clerk/nextjs';
 
 export default function RAGPage() {
   const params = useParams();
   const chatContent = params.chatContent as string;
-  const validRAGs = AVAILABLE_RAGS.map(rag => rag.id);
-  const ragOption = AVAILABLE_RAGS.find(rag => rag.id === chatContent);
+  const [rags, setRags] = useState<RAGOption[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { userId } = useAuth();
+
+  useEffect(() => {
+    getAllChatbots(userId || undefined)
+      .then(chatbots => {
+        setRags(chatbots);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Fehler beim Laden der Chatbots:', error);
+        setLoading(false);
+      });
+  }, [userId]);
+
+  if (loading) {
+    return <div>Lade Chatbots...</div>;
+  }
+
+  const validRAGs = rags.map(rag => rag.id);
+  const ragOption = rags.find(rag => rag.id === chatContent);
   
   return (
     <>
       {!validRAGs.includes(chatContent) || !ragOption ? (
-        <RAGList rags={AVAILABLE_RAGS} />
+        <RAGList rags={rags} />
       ) : (
         <RAGInterface chatContent={chatContent} ragOption={ragOption} />
       )}

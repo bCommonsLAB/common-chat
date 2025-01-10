@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Header } from '@/components/Header';
 import { MainFooter } from '@/components/MainFooter';
-
 import { ChatProvider } from '@/context/ChatContext';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Inter } from 'next/font/google';
+import { Header } from '@/components/Header';
 
 const inter = Inter({ subsets: ['latin'] });
 
