@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Common-Chat: RAG-basierte Chatanwendung
 
-## Getting Started
+Diese Anwendung ist eine moderne Chatanwendung, die auf dem RAG (Retrieval-Augmented Generation) Prinzip basiert. Sie ermöglicht es Benutzern, mit einem KI-Assistenten zu interagieren, der Zugriff auf spezifische Dokumentationen und Wissensdatenbanken hat.
 
-First, run the development server:
+## Funktionen
+
+- 🤖 KI-gestützte Chatinteraktion
+- 📚 Dokumentenbasierte Antworten (RAG)
+- 🔍 Semantische Suche über Pinecone
+- 💾 Persistente Chatspeicherung
+- 📱 Responsive Design
+
+## Installation
+
+1. Klonen Sie das Repository:
+```bash
+git clone [repository-url]
+cd common-chat
+```
+
+2. Installieren Sie die Abhängigkeiten:
+```bash
+npm install
+```
+
+## Konfiguration
+
+Die Anwendung benötigt verschiedene Umgebungsvariablen für die Funktionalität. Erstellen Sie eine `.env` Datei im Hauptverzeichnis mit folgenden Variablen:
+
+```env
+# OpenAI Konfiguration
+OPENAI_API_KEY=Ihr-OpenAI-API-Schlüssel
+OPENAI_CHAT_MODEL_NAME=gpt-4
+OPENAI_EMBEDDINGS_MODEL_NAME=text-embedding-3-large
+OPENAI_CHAT_TEMPERATURE=0.5
+
+# Pinecone Konfiguration
+PINECONE_API_KEY=Ihr-Pinecone-API-Schlüssel
+PINECONE_INDEX=Ihr-Pinecone-Index-Name
+```
+
+## Chatbot-Konfiguration
+
+Die verfügbaren Chatbots werden in der Datei `src/config.json` konfiguriert. Jeder Chatbot wird als Objekt im `availableRags`-Array definiert mit folgenden Eigenschaften:
+
+```json
+{
+  "id": "unique-id",                    // Eindeutige ID des Chatbots
+  "name": "Name des Chatbots",         // Anzeigename
+  "title": "Titel des Chatbots",       // Titel für die UI
+  "description": "Beschreibung",       // Kurze Beschreibung des Chatbots
+  "titleAvatarSrc": "URL",            // URL zum Avatar-Bild
+  "welcomeMessage": "Willkommen...",   // Begrüßungsnachricht
+  "errorMessage": "Fehlermeldung",     // Nachricht bei Fehlern
+  "url": "/chatbot-path",             // URL-Pfad des Chatbots
+  "placeholder": "Eingabetext...",     // Platzhaltertext für Eingabefeld
+  "maxChars": 500,                     // Maximale Zeichenanzahl pro Nachricht
+  "maxCharsWarningMessage": "...",     // Warnung bei Überschreitung
+  "footerText": "Footer Text",         // Text im Footer
+  "companyLink": "https://...",        // Link zur Firma/Organisation
+  "pineconeIndex": "index-name"        // Name des Pinecone Index für diesen Bot
+}
+```
+
+Jeder Chatbot greift auf seinen eigenen Pinecone-Index zu, der die spezifischen Dokumenten-Embeddings für seinen Wissensbereich enthält.
+
+## Entwicklung
+
+Starten Sie den Entwicklungsserver:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Die Anwendung ist dann unter [http://localhost:3000](http://localhost:3000) verfügbar.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Funktionsweise
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Die Anwendung verwendet einen RAG-basierten Ansatz für die Verarbeitung von Benutzeranfragen:
 
-## Learn More
+1. **Dokumentenverarbeitung**: 
+   - Dokumente werden in Chunks aufgeteilt
+   - Für jeden Chunk werden Embeddings erstellt
+   - Die Embeddings werden in Pinecone gespeichert
 
-To learn more about Next.js, take a look at the following resources:
+2. **Chatinteraktion**:
+   - Benutzereingaben werden analysiert
+   - Relevante Dokumente werden über Pinecone abgerufen
+   - OpenAI generiert kontextbezogene Antworten
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Speicherung**:
+   - Chatverlauf wird persistent gespeichert
+   - Quellendokumente werden referenziert
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Technologie-Stack
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 14 (React Framework)
+- OpenAI API (GPT-4, Embeddings)
+- Pinecone (Vektorendatenbank)
+- TypeScript
+- Tailwind CSS

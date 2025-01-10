@@ -1,0 +1,28 @@
+Project: Common-Chat
+Tech Stack:
+- Next.js (React Framework)
+- TypeScript
+- Tailwind CSS
+- ESLint
+- PostCSS
+
+Architecture:
+/src
+  /app          # Next.js App Router, Pages
+  /components   # React Components (Chat, RAG Interface)
+  /context      # React Context Providers
+  /services     # API Integration, Business Logic
+  /types        # TypeScript Definitions
+
+Key Features:
+- RAG (Retrieval-Augmented Generation) Interface
+- Dynamic Chat System
+- Source Management
+- Markdown Support
+- Responsive Design
+
+Core Components:
+- RAGInterface.tsx: Main RAG interaction
+- ChatHistory.tsx: Chat management
+- ChatMessage.tsx: Message rendering
+- Layout.tsx: App structure

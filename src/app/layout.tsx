@@ -4,6 +4,10 @@ import { Header } from '@/components/Header';
 import { MainFooter } from '@/components/MainFooter';
 
 import { ChatProvider } from '@/context/ChatContext';
+import { ClerkProvider } from '@clerk/nextjs';
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: "bCommonsLAB Prototypen",
@@ -16,21 +20,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="de">
-      <body>
-        <ChatProvider 
-          initialRAG={null}
-          initialContent={null}
-        >
-          <div className="h-screen flex flex-col">
-            <Header />
-            <main className="flex-1 overflow-hidden">
-              {children}
-            </main>
-            <MainFooter />
-          </div>
-        </ChatProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="de">
+        <body className={inter.className}>
+          <ChatProvider 
+            initialRAG={null}
+            initialContent={null}
+          >
+            <div className="h-screen flex flex-col">
+              <Header />
+              <main className="flex-1 overflow-hidden">
+                {children}
+              </main>
+              <MainFooter />
+            </div>
+          </ChatProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
