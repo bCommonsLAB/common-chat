@@ -14,13 +14,19 @@ export default function HomePage() {
 
   useEffect(() => {
     async function loadChatbots() {
+      console.log('Client: Starte Laden der Chatbots...');
+      console.log('Client: Benutzer-Status:', isLoaded ? (user ? 'Angemeldet' : 'Nicht angemeldet') : 'Lädt...');
+      
       try {
-        // Lade Chatbots aus der Datenbank mit Berücksichtigung des Benutzer-Status
-        const loadedChatbots = await getAllChatbots(user?.emailAddresses[0]?.emailAddress);
+        const userEmail = user?.emailAddresses[0]?.emailAddress;
+        console.log('Client: Versuche Chatbots zu laden für:', userEmail || 'Anonym');
+        
+        const loadedChatbots = await getAllChatbots(userEmail);
+        console.log('Client: Chatbots geladen:', loadedChatbots.length);
         setChatbots(loadedChatbots);
       } catch (error) {
-        console.error('Fehler beim Laden der Chatbots:', error);
-        // Fallback auf die config.json wenn die Datenbank nicht verfügbar ist
+        console.error('Client: Fehler beim Laden der Chatbots:', error);
+        console.log('Client: Verwende Fallback-Chatbots aus AVAILABLE_RAGS');
         setChatbots(AVAILABLE_RAGS);
       } finally {
         setLoading(false);
@@ -33,8 +39,12 @@ export default function HomePage() {
   }, [isLoaded, user?.emailAddresses]);
 
   if (!isLoaded || loading) {
-    return <div>Lade...</div>;
+    return <div className="flex items-center justify-center h-full">Lade...</div>;
   }
 
-  return <RAGList rags={chatbots} />;
+  return (
+    <div className="container mx-auto">
+      <RAGList rags={chatbots} />
+    </div>
+  );
 }

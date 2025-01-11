@@ -18,6 +18,7 @@ export default function RAGPage() {
   useEffect(() => {
     getAllChatbots(userId || undefined)
       .then(chatbots => {
+        console.log('Chatbots geladen:', chatbots);
         setRags(chatbots);
         setLoading(false);
       })

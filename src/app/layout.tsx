@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { MainFooter } from '@/components/MainFooter';
-import { ChatProvider } from '@/context/ChatContext';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Inter } from 'next/font/google';
 import { Header } from '@/components/Header';
+import { ChatProvider } from '@/context/ChatContext';
+import { Sidebar } from '@/components/Sidebar';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,16 +22,15 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="de">
         <body className={inter.className}>
-          <ChatProvider 
-            initialRAG={null}
-            initialContent={null}
-          >
-            <div className="h-screen flex flex-col">
+          <ChatProvider initialRAG={null} initialContent={null}>
+            <div className="flex h-screen flex-col">
               <Header />
-              <main className="flex-1 overflow-hidden">
-                {children}
-              </main>
-              <MainFooter />
+              <div className="flex flex-1 overflow-hidden">
+                <Sidebar />
+                <main className="flex-1 overflow-y-auto p-4">
+                  {children}
+                </main>
+              </div>
             </div>
           </ChatProvider>
         </body>
